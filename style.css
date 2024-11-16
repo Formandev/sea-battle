@@ -1,0 +1,154 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Rubik", sans-serif;
+}
+body {
+    width: 100vw;
+    background-color: bisque;
+}
+button {
+    padding: 10px;
+    border-radius: 9px;
+    border: 3px solid black;
+    cursor: pointer;
+    background-color: #e2e2e2;
+    transition: background-color 0.2s ease;
+    color: #0e0e0e;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+button:hover {
+    background-color: #cacaca; /* Початковий колір кнопки */
+}
+#game-window {
+    width: 100%;
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    user-select: none;
+}
+.game-name {
+    font-size: 30px;
+    font-weight: 500;
+    margin-bottom: 25px;
+}
+#game-management {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+#game-field {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 30px;
+}
+.letters-numbers {
+    font-weight: 600;
+}
+.your-field-ships {
+    display: flex;
+    align-items: baseline;
+}
+#your-field {
+    display: grid;
+    grid-template-columns: repeat(11, 40px);
+    grid-template-rows: repeat(11, 40px);
+    background-color: #e6e6e6;
+    border: 1px solid black;
+    
+}
+#ship-models {
+    display: flex;
+    flex-direction: column;
+    margin-left: 20px;
+    /* width: 160px; */
+}
+.ship-model {
+    display: inline-flex;
+    margin: 5px 0;
+    max-width: max-content; /* обмеження на розмір */
+    max-height: max-content; /* обмеження на розмір */
+}
+.ship-model.rotated {
+    flex-direction: column;
+    width: 40px;
+}
+.cell {
+    width: 40px;
+    height: 40px;
+    border: 0.5px solid #1c1c1c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.ship-cell {
+    width: 40px;
+    height: 40px;
+    background-color: #b4b4b4;
+}
+.no-style-cell {
+    background-color: transparent;
+}
+.occupied {
+    background-color: #b4b4b4;
+}
+
+.ship-model {
+    background-color: transparent; /* Це забере фон корабля */
+}
+
+#enemy-field {
+    grid-template-columns: repeat(11, 40px);
+    grid-template-rows: repeat(11, 40px);
+}
+
+/* При активації перетягування */
+.ship-model:active {
+    background-color: transparent;
+}
+
+#ship-models .ship-model {
+    background-color: transparent; /* Забираємо фон для самого контейнера */
+}
+
+/* Всі клітинки ворожого поля за замовчуванням */
+#enemy-field .playable {
+    background-color: #e6e6e6; /* Колір порожніх клітинок */
+}
+
+/* Приховування кораблів ворога */
+#enemy-field .occupied {
+    background-color: #e6e6e6; /* Робимо зайняті клітинки такими ж, як порожні */
+}
+
+
+
+@media screen and (max-width: 780px) {
+    button {
+        padding: 6px;
+    }
+    .letters-numbers {
+        font-weight: 600;
+        font-size: 13px;
+    }
+    #game-field {
+        flex-direction: column;
+    }
+    #your-field {
+        grid-template-columns: repeat(11, 30px);
+        grid-template-rows: repeat(11, 30px);
+        margin-bottom: 20px;
+    }
+    .cell {
+        width: 30px;
+        height: 30px;
+    }
+    #enemy-field {
+        grid-template-columns: repeat(11, 30px);
+        grid-template-rows: repeat(11, 30px);
+    }
+}
