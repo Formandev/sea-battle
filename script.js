@@ -11,6 +11,7 @@ const exitBtn = document.createElement("button");
 
 exitBtn.textContent = "Exit";
 exitBtn.style.display = "none";
+exitBtn.style.marginBottom = "20px";
 exitBtn.addEventListener("click", resetGame);
 gameWindow.appendChild(exitBtn);
 
@@ -592,7 +593,8 @@ function checkVictoryCondition(field, player) {
     const remainingShips = field.querySelectorAll(".occupied:not(.shot)");
 
     if (remainingShips.length === 0) {
-        alert(player + " Win!");
+        // Показуємо вікно з переможцем
+        showVictoryModal(player);
 
         if (player === "Computer") {
             revealAllShips(enemyField); // Відкриваємо всі кораблі на полі ворога
@@ -604,17 +606,69 @@ function checkVictoryCondition(field, player) {
         yourField.style.pointerEvents = "none";
     }
 }
+function showVictoryModal(player) {
+    
+    const modal = document.createElement("div");
+    gameWindow.style.position = "relative";
+    modal.getElementsByClassName("modal");
+    modal.id = "victory-modal";
+    modal.style.position = "absolute";
+    modal.style.top = "50%";
+    modal.style.left = "50%";
+    modal.style.transform = "translate(-50%, -50%)";
+    modal.style.backgroundColor = "white";
+    modal.style.padding = "20px";
+    modal.style.borderRadius = "10px";
+    modal.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
+    modal.style.zIndex = "1000";
+    modal.style.textAlign = "center";
+
+    const message = document.createElement("p");
+    message.textContent = `${player} Wins! 🎉`;
+    message.style.fontSize = "24px";
+    message.style.marginBottom = "20px";
+
+    const closeButton = document.createElement("button");
+    closeButton.textContent = "Close";
+    closeButton.style.padding = "10px 20px";
+    closeButton.style.fontSize = "16px";
+    closeButton.style.cursor = "pointer";
+    closeButton.style.border = "none";
+    closeButton.style.backgroundColor = "#007BFF";
+    closeButton.style.color = "white";
+    closeButton.style.borderRadius = "5px";
+
+
+     // блюр фону
+     const blurDiv = document.createElement("div");
+     blurDiv.style.position = "absolute";
+     blurDiv.style.width = "100%";
+     blurDiv.style.height = "100%";
+     blurDiv.style.top = "0";
+     blurDiv.style.left = "0";
+     blurDiv.style.zIndex = "1";
+     blurDiv.style.backdropFilter = "blur(3px)";
+ 
+     document.body.appendChild(blurDiv);
+
+    closeButton.addEventListener("click", () => {
+        modal.remove();
+        blurDiv.remove();
+        document.body.style.filter = "";
+    });
+
+    modal.appendChild(message);
+    modal.appendChild(closeButton);
+
+    gameWindow.appendChild(modal);
+}
+
+
 
 function revealAllShips(field) {
     const allOccupiedCells = field.querySelectorAll(".occupied");
     allOccupiedCells.forEach(cell => {
-        cell.classList.add("revealed"); // Робимо кораблі видимими
-        cell.style.backgroundColor = "#b4b4b4"; // Відображення кольору корабля
+        cell.classList.add("revealed");
+        cell.style.backgroundColor = "#b4b4b4";
     });
 }
-
-
-console.log("Enemy ships:", enemyField.querySelectorAll(".occupied"));
-
-
-console.log("Clicked cell:", cell);
