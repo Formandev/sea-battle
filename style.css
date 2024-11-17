@@ -68,13 +68,12 @@ button:hover {
     display: flex;
     flex-direction: column;
     margin-left: 20px;
-    /* width: 160px; */
 }
 .ship-model {
     display: inline-flex;
     margin: 5px 0;
-    max-width: max-content; /* обмеження на розмір */
-    max-height: max-content; /* обмеження на розмір */
+    max-width: max-content; 
+    max-height: max-content; 
 }
 .ship-model.rotated {
     flex-direction: column;
@@ -101,7 +100,7 @@ button:hover {
 }
 
 .ship-model {
-    background-color: transparent; /* Це забере фон корабля */
+    background-color: transparent; 
 }
 
 #enemy-field {
@@ -112,23 +111,22 @@ button:hover {
 cursor: pointer;
 background-color: #cecece;
 }
-/* При активації перетягування */
+
 .ship-model:active {
     background-color: transparent;
 }
 
 #ship-models .ship-model {
-    background-color: transparent; /* Забираємо фон для самого контейнера */
+    background-color: transparent; 
 }
 
-/* Всі клітинки ворожого поля за замовчуванням */
+
 #enemy-field .playable {
-    background-color: #e6e6e6; /* Колір порожніх клітинок */
+    background-color: #e6e6e6; 
 }
 
-/* Приховування кораблів ворога */
 #enemy-field .occupied {
-    background-color: #e6e6e6; /* Робимо зайняті клітинки такими ж, як порожні */
+    background-color: #e6e6e6; 
 }
 
  
