@@ -42,6 +42,7 @@ button:hover {
     display: flex;
     justify-content: space-between;
     gap: 10px;
+    margin-bottom: 20px;
 }
 #game-field {
     display: flex;
