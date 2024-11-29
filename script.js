@@ -11,8 +11,9 @@ const exitBtn = document.createElement("button");
 
 exitBtn.textContent = "Exit";
 exitBtn.style.display = "none";
-exitBtn.style.marginBottom = "20px";
+exitBtn.style.margin = "20px 0";
 exitBtn.addEventListener("click", resetGame);
+exitBtn.style.order = 5;
 gameWindow.appendChild(exitBtn);
 
 const letters = ["", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
@@ -129,11 +130,17 @@ function startGame() {
 
 // скидання гри 
 function resetGame() {
+    const destroyedShipsContainer = document.getElementById("destroyed-enemy-ships");
+    if (destroyedShipsContainer) {
+        destroyedShipsContainer.remove();
+    }
+
     enemyField.innerHTML = "";
     enemyField.style.display = "none";
     
     clearField();
     createShipModels();
+    
 
     startBtn.style.display = "inline-block";
     randomGenBtn.style.display = "inline-block";
@@ -386,7 +393,7 @@ enemyField.addEventListener("click", (e) => {
             
             cell.innerHTML = "X";
             cell.style.color = "red";
-            cell.style.fontSize = "32px";
+            
             cell.style.textAlign = "center";
 
             // перевірка чи корабель повністю знищений
@@ -430,16 +437,37 @@ function enemyMove() {
 
     let targetCell;
 
-    if (potentialTargets.length > 0) {
-        // Вибираємо клітинку з черги потенційних цілей
+    // Продовжуємо атаку в напрямку
+    if (attackDirection && lastHitCell) {
+        targetCell = getNextCellInDirection(lastHitCell, attackDirection);
+
+        if (!targetCell || targetCell.classList.contains("shot")) {
+            // Перевіряємо, чи є протилежний напрямок доступним
+            const reversedDirection = reverseDirection(attackDirection);
+            const reversedCell = getNextCellInDirection(lastHitCell, reversedDirection);
+
+            if (reversedCell && !reversedCell.classList.contains("shot")) {
+                attackDirection = reversedDirection;
+                targetCell = reversedCell;
+            } else {
+                attackDirection = null; // Якщо обидва напрямки недоступні, скидаємо напрямок
+            }
+        }
+    }
+
+    // Якщо немає напрямку, використовуємо потенційні цілі
+    if (!targetCell && potentialTargets.length > 0) {
         targetCell = potentialTargets.shift();
-    } else if (lastHitCell) {
-        // Генеруємо нові потенційні цілі після останнього влучання
-        generatePotentialTargets(lastHitCell);
-        targetCell = potentialTargets.length > 0 ? potentialTargets.shift() : getRandomCell(emptyCells);
-    } else {
-        // Випадковий хід, якщо немає влучань
-        targetCell = getRandomCell(emptyCells);
+    }
+
+    // Якщо немає жодної цілі, генеруємо потенційні цілі або стріляємо випадково
+    if (!targetCell) {
+        if (lastHitCell) {
+            generatePotentialTargets(lastHitCell);
+            targetCell = potentialTargets.length > 0 ? potentialTargets.shift() : getRandomCell(emptyCells);
+        } else {
+            targetCell = getRandomCell(emptyCells);
+        }
     }
 
     if (!targetCell) return;
@@ -449,42 +477,44 @@ function enemyMove() {
     if (targetCell.classList.contains("occupied")) {
         targetCell.innerHTML = "X";
         targetCell.style.color = "red";
-        targetCell.style.fontSize = "32px";
         targetCell.style.textAlign = "center";
 
-        lastHitCell = targetCell; // Зберігаємо останнє влучання
-        attackDirection = determineDirection(lastHitCell); // Оновлюємо напрямок атаки
+        lastHitCell = targetCell;
 
         const shipCells = getShipCells(targetCell, yourField);
         const isDestroyed = shipCells.every(shipCell => shipCell.classList.contains("shot"));
 
         if (isDestroyed) {
             lastHitCell = null; // Скидаємо останнє влучання
-            attackDirection = null; // Скидаємо напрямок атаки
-            markSurroundingCells(yourField, shipCells); // Позначення навколо потопленого корабля
+            attackDirection = null; // Скидаємо напрямок
+            potentialTargets = []; // Очищуємо потенційні цілі
+            markSurroundingCells(yourField, shipCells); // Позначаємо клітинки навколо корабля
         } else {
-            // Генеруємо нові потенційні цілі
-            generatePotentialTargets(lastHitCell);
+            // Якщо напрямок ще не визначено, встановлюємо його
+            if (!attackDirection) {
+                attackDirection = determineDirection(lastHitCell);
+            }
         }
 
-        checkVictoryCondition(yourField, "Computer"); // Перевірка перемоги
-        setTimeout(enemyMove, 1000); // Продовжуємо хід комп'ютера після влучання
+        checkVictoryCondition(yourField, "Computer");
+        setTimeout(enemyMove, 1000);
     } else {
         targetCell.innerHTML = "•";
         targetCell.style.color = "blue";
         targetCell.style.fontSize = "24px";
         targetCell.style.textAlign = "center";
 
-        isPlayerTurn = true;
+        isPlayerTurn = true; // Передаємо хід гравцю
     }
 }
 
 function generatePotentialTargets(cell) {
     const row = parseInt(cell.dataset.row);
     const col = parseInt(cell.dataset.col);
+
     const directions = [
         { row: -1, col: 0 }, // вверх
-        { row: 1, col: 0 },  // внииз
+        { row: 1, col: 0 },  // вниз
         { row: 0, col: -1 }, // вліво
         { row: 0, col: 1 }   // вправо
     ];
@@ -498,16 +528,42 @@ function determineDirection(cell) {
     const row = parseInt(cell.dataset.row);
     const col = parseInt(cell.dataset.col);
 
-    const adjacentHits = [
-        { dir: { row: -1, col: 0 }, cell: yourField.querySelector(`.cell[data-row="${row - 1}"][data-col="${col}"]`) }, // вверх
-        { dir: { row: 1, col: 0 }, cell: yourField.querySelector(`.cell[data-row="${row + 1}"][data-col="${col}"]`) }, // вниз
-        { dir: { row: 0, col: -1 }, cell: yourField.querySelector(`.cell[data-row="${row}"][data-col="${col - 1}"]`) }, // вліво
-        { dir: { row: 0, col: 1 }, cell: yourField.querySelector(`.cell[data-row="${row}"][data-col="${col + 1}"]`) }  // вправо
+    const directions = [
+        { row: -1, col: 0 }, // вверх
+        { row: 1, col: 0 },  // вниз
+        { row: 0, col: -1 }, // вліво
+        { row: 0, col: 1 }   // вправо
     ];
 
-    const hitDirections = adjacentHits.filter(item => item.cell && item.cell.classList.contains("shot"));
-    return hitDirections.length === 1 ? hitDirections[0].dir : null;
+    // Перевіряємо, чи є влучання в напрямках від поточної клітинки
+    for (const dir of directions) {
+        const nextCell = getNextCellInDirection(cell, dir);
+        if (nextCell && nextCell.classList.contains("shot") && nextCell.classList.contains("occupied")) {
+            return dir; // Повертаємо напрямок, де було влучання
+        }
+    }
+
+    return null; // Якщо напрямок не визначено
 }
+function getNextCellInDirection(cell, direction) {
+    if (!cell || !direction) return null;
+
+    const row = parseInt(cell.dataset.row);
+    const col = parseInt(cell.dataset.col);
+
+    const nextRow = row + direction.row;
+    const nextCol = col + direction.col;
+
+    // Перевіряємо, чи знаходиться клітинка в межах поля
+    if (nextRow < 1 || nextRow > 10 || nextCol < 1 || nextCol > 10) return null;
+
+    // Повертаємо наступну клітинку
+    return yourField.querySelector(`.cell[data-row="${nextRow}"][data-col="${nextCol}"]`);
+}
+function reverseDirection(direction) {
+    return { row: -direction.row, col: -direction.col };
+}
+
 
 function getRandomCell(cells) {
     return cells[Math.floor(Math.random() * cells.length)];
@@ -538,6 +594,52 @@ function getShipCells(startCell, field) {
     return shipCells;
 }
 
+function updateDestroyedShips(shipCells) {
+    let shipsContainer = document.getElementById("enemy-ships-container");
+
+    // Якщо контейнера ще немає, створюємо його
+    if (!shipsContainer) {
+        const destroyedShipsContainer = document.createElement("div");
+        destroyedShipsContainer.id = "destroyed-enemy-ships";
+        destroyedShipsContainer.style.marginTop = "0px";
+        
+        
+
+        const title = document.createElement("h3");
+        title.textContent = "Destroyed enemy ships:";
+        title.style.marginBottom = "10px";
+
+        shipsContainer = document.createElement("div");
+        shipsContainer.id = "enemy-ships-container";
+        shipsContainer.style.display = "flex";
+        shipsContainer.style.flexDirection = "column";
+        shipsContainer.style.gap = "10px";
+
+        destroyedShipsContainer.appendChild(title);
+        destroyedShipsContainer.appendChild(shipsContainer);
+
+        gameWindow.appendChild(destroyedShipsContainer);
+    }
+
+    // Додаємо знищений корабель до контейнера
+    const shipElement = document.createElement("div");
+    shipElement.classList.add("destroyed-ship");
+    shipElement.style.display = "flex";
+    shipElement.style.gap = "0px";
+
+    // Перебираємо клітинки знищеного корабля
+    shipCells.forEach(cell => {
+        const cellElement = document.createElement("div");
+        cellElement.classList.add("destroy-cell");
+        cellElement.style.backgroundColor = "#B4B4B4";
+        cellElement.style.border = "1px solid black";
+        cellElement.innerText = "X";
+        shipElement.appendChild(cellElement);
+    });
+
+    shipsContainer.appendChild(shipElement);
+}
+
 
 // простріл навколо повністю знищеного корабля
 function markSurroundingCells(field, shipCells) {
@@ -564,6 +666,9 @@ function markSurroundingCells(field, shipCells) {
             }
         }
     });
+    if (field === enemyField) {
+        updateDestroyedShips(shipCells);
+    }
 }
 
 
